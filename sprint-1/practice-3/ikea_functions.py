@@ -1,92 +1,49 @@
 
-def find_products(catalog, product_type):
+def find_products(ikea_df, item_category):
     '''
     | Help on user-defined function find_products:
     |
     | This function takes inputs: 
-    | - catalog - dictionary containing ikea catalog items
-    | - product_type - string containing product types in catalog (first item in dict value)
+    | - ikea_df - dataframe containing ikea catalog items
+    | - item_category - string containing product types in catalog 
     | 
     | This function returns:
-    | - new_dict - a dictionary containing only catalog items that match the input product_type
+    | - selected_category - a dataframe containing only catalog items that match the input product_type
     '''
-    # empty list to fill with items 
-    selected_keys = []
-    selected_vals = []
-    # loop through each key 
-    for key in catalog:
-    # for each key, find the values 
-        val = catalog[key]
-        # check if the item category is in the values
-        # if it is, add it to our selection list
-        if product_type in val[0]:
-            selected_keys.append(key)
-            selected_vals.append(val)
-    # make new dict to return 
-    new_dict = dict(zip(selected_keys, selected_vals))
-    # return our list 
-    return new_dict
+    selected_category = ikea_df[(ikea_df['category'] == item_category)]
+    return selected_category
 
-def remove_designer(catalog, product_type, designer_to_exclude):
+def find_products_remove_designer(ikea_df, item_category, designer_to_exclude):
     '''
     | Help on user-defined function remove_designer:
     |
     | This function takes inputs: 
-    | - catalog - dictionary containing ikea catalog items
-    | - product_type - string containing product types in catalog (first item in dict value)
+    | - ikea_df - dataframe containing ikea catalog items
+    | - item_category - string containing product types in catalog 
     | - designer_to_exclude - string containing name of designer we want to remove from selection 
     | 
     | This function returns:
-    | - final_selection - a dictionary containing only catalog items that match the input product_type 
+    | - selected_category - a dataframe containing only catalog items that match the input product_type
     | AND does NOT include designer_to_exclude
     '''
-    # run find_products, nested function 
-    selection = find_products(catalog, product_type)
-    # exclude designer in selection
-    refined_selection = {key: val for key, val in selection.items() if designer_to_exclude not in val}
+    # first get category
+    selected_category = find_products(ikea_df, item_category)
+    # then filter to remove designer
+    refined_selection = selected_category[selected_category['designer'] != designer_to_exclude]
     return refined_selection
 
-def filter_pricepoint(input_selection, max_price):
+def filter_pricepoint(input_selection, min_price, max_price):
     '''
     | Help on user-defined function filter_pricepoint:
     |
     | This function takes inputs: 
-    | - input_selection - dictionary containing ikea catalog items. can be original catalog dictionary or
-    | filtered `refined_selection` dict from find_products, remove_designer, or other. 
-    | - max_price - int or float indicating max budget. funciton will keep everything < this value. 
+    | - input_selection - dataframe containing ikea catalog items. can be original or filtered.
+    | - min_price - int or float indicating min budget. function will keep everything <= this value. 
+    | - max_price - int or float indicating max budget. function will keep everything > this value. 
     | 
     | This function returns:
-    | - final_selection - a dictionary containing only catalog items that match the input product_type 
-    | AND does NOT include designer_to_exclude
+    | - final_selection - a dataframe containing only catalog items within budget range 
     '''
-    # empty lists to fill with keys & vals we keep 
-    final_selection_keys = []
-    final_selection_vals = []
-    # loop through keys, get vals 
-    for key in list(input_selection.keys()):
-        val = input_selection[key]
-        # if within budget add keys & vals to list
-        if val[1] < max_price:
-            input_selection_keys.append(key)           
-            input_selection_vals.append(val)
-    # zip lists into a new dictionary 
-    final_selection = dict(zip(final_selection_keys, final_selection_vals))
+    final_selection = input_selection[(input_selection['price'] <= max_price) & 
+                                      (input_selection['price'] > min_price)]
     return final_selection
-
-def select_designer(catalog, product_type, designer_to_select):
-    '''    
-    | Help on user-defined function select_designer:
-    |
-    | This function takes inputs: 
-    | - catalog - dictionary containing ikea catalog items
-    | - product_type - string containing product types in catalog (first item in dict value)
-    | - designer_to_select - string containing name of designer we want to keep (exclude every other designer)
-    | 
-    | This function returns:
-    | - refined_selection - a dictionary containing only catalog items that match the input product_type 
-    | AND is designed by designer_to_select
-    '''
-    selection = find_products(catalog, product_type)
-    refined_selection = {key: val for key, val in selection.items() if designer_to_select in val}
-    return refined_selection
-
